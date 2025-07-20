@@ -3,9 +3,11 @@
 ---
 
 <div class="loading">
-  <p>LOADING...</p>
-  <p>Fetching OpenF1 API...</p>
-  <p>Loading F1 3Dmodel...</p>
+  <p class="loadingTitle">LOADING...</p>
+  <div class="loadingText">
+    <p>OpenF1 APIにアクセスしています</p>
+    <p>3Dモデルをロードしています</p>
+  </div>
 </div>
 
 <style lang="scss">
@@ -15,7 +17,35 @@
     left: 0;
     width: 100%;
     height: 100%;
-    display: grid;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    gap: 30px;
+    z-index: var(--z-index-loading);
+  }
+
+  .loadingTitle {
+    font-size: 26px;
+    font-weight: 700;
+    animation: blink 0.1s infinite ease-in-out;
+  }
+
+  .loadingText {
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+  }
+
+  @keyframes blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
   }
 </style>

@@ -3,7 +3,8 @@
 
 :root {
   scrollbar-gutter: stable;
-
+  --z-index-loading: 1000;
+  --z-index-opening: 999;
 }
 
 video {
@@ -29,8 +30,10 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
-  font-family: "Orbitron", "Sawarabi Gothic", sans-serif;
+  font-family: 'Orbitron', 'Sawarabi Gothic', sans-serif;
   font-size: 14px;
+  background-color: #000000;
+  color: #ffffff;
 
   @include media_sp {
   }
