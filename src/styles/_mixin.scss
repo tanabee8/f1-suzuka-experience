@@ -1,0 +1,33 @@
+@use 'sass:math';
+
+$design_width_pc: 1280px;
+$sp_breakpoint: 768px;
+$tablet_breakpoint: 1024px;
+
+// メディアクエリでSPのみ適用
+@mixin media_sp {
+  @media (max-width: ($sp_breakpoint - 1px)) {
+    @content;
+  }
+}
+
+// メディアクエリで SP と PC の間
+@mixin media_tablet {
+  @media (min-width: ($sp_breakpoint)) and (max-width: ($tablet_breakpoint - 1px)) {
+    @content;
+  }
+}
+
+// メディアクエリで PC 以上で適用
+@mixin media_desktop {
+  @media (min-width: $tablet_breakpoint) {
+    @content;
+  }
+}
+
+// pxをvwに変換
+@mixin vw($property, $px, $max: null) {
+  $vw-value: math.div($px, $design_width_pc) * 100vw;
+
+  #{$property}: clamp(#{$px}, #{$vw-value}, #{$max});
+}
