@@ -1,6 +1,8 @@
 ---
 import Layout from '@layouts/Layout.astro';
-import '@styles/globals.scss';
+import Canvas from '@components/Canvas.astro';
+import Loading from '@/components/Loading.astro';
+import Opening from '@/components/Opening.astro';
 ---
 
 <Layout>
@@ -10,9 +12,32 @@ import '@styles/globals.scss';
     href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Sawarabi+Gothic&display=swap"
     rel="stylesheet"
   />
-  SUZUKA 鈴鹿
+  <div class="loading">
+    <Loading />
+  </div>
+  <div class="opening">
+    <Opening />
+  </div>
+  <div class="wrapper">
+    <Canvas />
+  </div>
 </Layout>
 
-<style lang="scss"></style>
+<style lang="scss">
+  .wrapper {
+    height: 3000vh;
+  }
+</style>
 
-<script></script>
+<script>
+  import { scrollStore } from '@stores/globalStore';
+  import Lenis from 'lenis';
+
+  const lenis = new Lenis({
+    autoRaf: true
+  });
+  lenis.on('scroll', (e) => {
+    scrollStore.actions.setScrollAmount(e.progress);
+    scrollStore.actions.setScrollPercentage(e.scroll);
+  });
+</script>
