@@ -1,7 +1,7 @@
 import type { Store } from '../types/store.d.ts';
-import { proxy } from 'valtio/vanilla';
+import { proxy, subscribe } from 'valtio/vanilla';
 
-interface scrollStoreType {
+interface ScrollStoreType {
   scrollAmount: number;
   scrollPercentage: number;
 }
@@ -11,7 +11,7 @@ export const scrollStore = proxy<Store>({
     scrollStore: {
       scrollAmount: 0,
       scrollPercentage: 0
-    } as scrollStoreType
+    } as ScrollStoreType
   },
   actions: {
     setScrollAmount(amount: number) {
@@ -22,3 +22,15 @@ export const scrollStore = proxy<Store>({
     }
   }
 });
+
+// 購読用のヘルパー関数を追加
+scrollStore.subscribe = (
+  callback: (state: { scrollAmount: number; scrollPercentage: number }) => void
+) => {
+  return subscribe(scrollStore.states.scrollStore, () => {
+    callback({
+      scrollAmount: scrollStore.states.scrollStore.scrollAmount,
+      scrollPercentage: scrollStore.states.scrollStore.scrollPercentage
+    });
+  });
+};

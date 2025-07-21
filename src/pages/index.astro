@@ -3,6 +3,8 @@ import Layout from '@layouts/Layout.astro';
 import Canvas from '@components/Canvas.astro';
 import Loading from '@/components/Loading.astro';
 import Opening from '@/components/Opening.astro';
+import ShowRoom from '@/components/ShowRoom.astro';
+import RaceMap from '@/components/RaceMap.astro';
 ---
 
 <Layout>
@@ -12,20 +14,34 @@ import Opening from '@/components/Opening.astro';
     href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Sawarabi+Gothic&display=swap"
     rel="stylesheet"
   />
-  <div class="loading">
+  <!-- <div class="loading">
     <Loading />
-  </div>
+  </div> -->
   <div class="opening">
     <Opening />
   </div>
   <div class="wrapper">
     <Canvas />
+    <div class="contents">
+      <div id="scene-showroom" class="scene-container">
+        <ShowRoom />
+      </div>
+      <div id="scene-racemap" class="scene-container">
+        <RaceMap />
+      </div>
+    </div>
   </div>
 </Layout>
 
 <style lang="scss">
-  .wrapper {
-    height: 3000vh;
+  .contents {
+    position: relative;
+    margin-top: -100vh;
+    margin-top: -100dvh;
+  }
+
+  .scene-container {
+    position: relative;
   }
 </style>
 

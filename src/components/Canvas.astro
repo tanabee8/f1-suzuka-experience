@@ -22,3 +22,114 @@
     }
   }
 </style>
+
+<script>
+  import { scrollStore } from '@stores/globalStore';
+  import {
+    initWebGL,
+    getWebGLInstance,
+    startOpeningSequence
+  } from '@scripts/webgl/core/WebGLCore';
+
+  // WebGLの初期化
+  const canvas = document.getElementById('canvas');
+  if (canvas instanceof HTMLCanvasElement) {
+    const webgl = initWebGL(canvas);
+
+    // 初期状態ではopeningシーンをアクティブ化
+    window.addEventListener('load', () => {
+      startOpeningSequence();
+      console.log('初期シーン: openingをアクティブ化しました');
+    });
+
+    // IntersectionObserverを使用して各コンポーネントの表示状態を監視
+    const setupSceneObservers = () => {
+      const webglInstance = getWebGLInstance();
+      if (!webglInstance) return;
+
+      // 監視対象のコンポーネント (優先順位順に並べる - 後のほうが優先度高)
+      const targetComponents = [
+        {
+          id: 'showroom',
+          element: document.querySelector('#scene-showroom'),
+          priority: 1,
+          isVisible: false
+        },
+        {
+          id: 'racemap',
+          element: document.querySelector('#scene-racemap'),
+          priority: 2,
+          isVisible: false
+        }
+      ];
+
+      console.log('監視対象のコンポーネント:', targetComponents);
+
+      // 現在表示中のコンポーネント
+      let currentActiveComponent = '';
+
+      // 表示状態の更新とアクティブシーンの決定
+      const updateActiveScene = () => {
+        // 表示されているコンポーネントを優先度順にソート
+        const visibleComponents = targetComponents
+          .filter((comp) => comp.isVisible)
+          .sort((a, b) => b.priority - a.priority);
+
+        // 表示されているコンポーネントがある場合、最も優先度の高いものをアクティブに
+        if (visibleComponents.length > 0) {
+          const topComponent = visibleComponents[0];
+
+          if (currentActiveComponent !== topComponent.id) {
+            currentActiveComponent = topComponent.id;
+            console.log(
+              `シーン切替: ${topComponent.id} が表示されました (優先度: ${topComponent.priority})`
+            );
+            webglInstance.activateScene(topComponent.id);
+          }
+        }
+      };
+
+      // IntersectionObserverの設定
+      // threshold: 0 - 1pxでも表示されたら検出
+      const options = {
+        root: null, // ビューポートをルートとする
+        rootMargin: '0px',
+        threshold: 0 // 1pxでも見えたら検出
+      };
+
+      const sceneObserver = new IntersectionObserver((entries) => {
+        // 各エントリーの可視状態を更新
+        entries.forEach((entry) => {
+          const componentId = entry.target.getAttribute('data-scene-id');
+          if (!componentId) return;
+
+          // 対象コンポーネントの可視状態を更新
+          const component = targetComponents.find((c) => c.id === componentId);
+          if (component) {
+            component.isVisible = entry.isIntersecting;
+          }
+        });
+
+        // 表示状態が変わったので、アクティブシーンを更新
+        updateActiveScene();
+      }, options);
+
+      // 各コンポーネントにdata属性を追加して監視開始
+      targetComponents.forEach(({ id, element }) => {
+        if (element) {
+          element.setAttribute('data-scene-id', id);
+          sceneObserver.observe(element);
+        } else {
+          console.warn(`要素 ${id} が見つかりませんでした`);
+        }
+      });
+    };
+
+    // DOMが完全に読み込まれたら監視を開始
+    if (document.readyState === 'complete') {
+      setupSceneObservers();
+    } else {
+      window.addEventListener('load', setupSceneObservers);
+    }
+  }
+</script>
