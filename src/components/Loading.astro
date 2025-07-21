@@ -2,13 +2,137 @@
 
 ---
 
-<div class="loading">
+<div class="loading" id="loading-screen">
   <p class="loadingTitle">LOADING...</p>
   <div class="loadingText">
-    <p>OpenF1 APIにアクセスしています</p>
-    <p>3Dモデルをロードしています</p>
+    <p id="api-status">OpenF1 APIにアクセスしています</p>
+    <p id="model-status">3Dモデルをロードしています</p>
+  </div>
+  <div class="progressContainer">
+    <div class="progressBar" id="progress-bar"></div>
   </div>
 </div>
+
+<script>
+  import { scrollStore } from '@stores/globalStore';
+  import { subscribe } from 'valtio/vanilla';
+  import { fetchLocationData, fetchTeamRadioData } from '@api/openF1API';
+  import { ModelLoader } from '@scripts/webgl/utils/ModelLoader';
+
+  const loadingScreen = document.getElementById('loading-screen');
+  const apiStatus = document.getElementById('api-status');
+  const modelStatus = document.getElementById('model-status');
+  const progressBar = document.getElementById('progress-bar');
+
+  let locationApiLoaded = false;
+  let teamRadioApiLoaded = false;
+  let modelLoaded = false;
+
+  // プログレスバーを更新する関数
+  const updateProgress = () => {
+    const progress =
+      (locationApiLoaded ? 33 : 0) +
+      (teamRadioApiLoaded ? 33 : 0) +
+      (modelLoaded ? 34 : 0) +
+      '%';
+    if (progressBar) progressBar.style.width = progress;
+  };
+
+  // 位置情報APIデータをロードする
+  const loadLocationData = async () => {
+    try {
+      if (apiStatus)
+        apiStatus.textContent = 'OpenF1 位置情報APIにアクセスしています...';
+      const data = await fetchLocationData();
+      console.log('位置情報データ:', data);
+      scrollStore.actions.setLocationData(data);
+      locationApiLoaded = true;
+      updateProgress();
+      if (apiStatus) apiStatus.textContent = '位置情報データ: ロード完了 ✓';
+    } catch (error) {
+      console.error('位置情報API通信エラー:', error);
+      if (apiStatus) apiStatus.textContent = '位置情報データ: エラー ✗';
+      // エラー時でも次の処理に進むために、ロード完了としてマーク
+      locationApiLoaded = true;
+    }
+  };
+
+  // チームラジオAPIデータをロードする
+  const loadTeamRadioData = async () => {
+    try {
+      const teamRadioStatus = document.createElement('p');
+      teamRadioStatus.id = 'team-radio-status';
+      teamRadioStatus.textContent = 'チームラジオデータにアクセスしています...';
+      const loadingTextEl = document.querySelector('.loadingText');
+      if (loadingTextEl) {
+        loadingTextEl.appendChild(teamRadioStatus);
+      }
+
+      const data = await fetchTeamRadioData();
+      console.log('チームラジオデータ:', data);
+      scrollStore.actions.setTeamRadioData(data);
+      teamRadioApiLoaded = true;
+      updateProgress();
+      teamRadioStatus.textContent = 'チームラジオデータ: ロード完了 ✓';
+    } catch (error) {
+      console.error('チームラジオAPI通信エラー:', error);
+      const teamRadioStatus = document.getElementById('team-radio-status');
+      if (teamRadioStatus)
+        teamRadioStatus.textContent = 'チームラジオデータ: エラー ✗';
+      // エラー時でも次の処理に進むために、ロード完了としてマーク
+      teamRadioApiLoaded = true;
+    }
+  };
+
+  // 3Dモデルをロードする
+  const loadF1Model = async () => {
+    try {
+      if (modelStatus)
+        modelStatus.textContent = '3Dモデルをロードしています...';
+      await ModelLoader.loadF1Model();
+      modelLoaded = true;
+      updateProgress();
+      if (modelStatus) modelStatus.textContent = '3Dモデル: ロード完了 ✓';
+    } catch (error) {
+      console.error('モデルロードエラー:', error);
+      if (modelStatus) modelStatus.textContent = '3Dモデル: エラー ✗';
+    }
+  };
+
+  // ローディング完了時の処理
+  const checkLoadingComplete = () => {
+    if (locationApiLoaded && teamRadioApiLoaded && modelLoaded) {
+      setTimeout(() => {
+        // ローディング画面を非表示にする
+        if (loadingScreen) {
+          loadingScreen.classList.add('loading-complete');
+          // openingシーンに切り替える
+          setTimeout(() => {
+            if (loadingScreen) loadingScreen.style.display = 'none';
+          }, 1000); // フェードアウトアニメーションの時間
+        }
+      }, 500); // 少し遅延させて両方のロード完了を表示
+    }
+  };
+
+  // F1データストアの変更を監視
+  const unsubscribe = subscribe(scrollStore.states.f1DataStore, () => {
+    if (!scrollStore.states.f1DataStore.isLoading) {
+      checkLoadingComplete();
+    }
+  });
+
+  // ロード処理を開始
+  document.addEventListener('DOMContentLoaded', () => {
+    Promise.all([
+      loadLocationData(),
+      loadTeamRadioData(),
+      loadF1Model()
+    ]).finally(() => {
+      checkLoadingComplete();
+    });
+  });
+</script>
 
 <style lang="scss">
   .loading {
@@ -23,11 +147,20 @@
     justify-content: center;
     gap: 30px;
     z-index: var(--z-index-loading);
+    background-color: #000;
+    color: #fff;
+    transition: opacity 0.8s ease;
+  }
+
+  .loading-complete {
+    opacity: 0;
+    pointer-events: none;
   }
 
   .loadingTitle {
-    font-size: 26px;
+    font-size: 32px;
     font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
     animation: blink 0.1s infinite ease-in-out;
   }
 
@@ -35,8 +168,25 @@
     font-weight: bold;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
     align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .progressContainer {
+    width: 80%;
+    max-width: 400px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progressBar {
+    height: 100%;
+    width: 0%;
+    background-color: #ff1801; /* F1レッドカラー */
+    transition: width 0.3s ease;
   }
 
   @keyframes blink {

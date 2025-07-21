@@ -21,7 +21,8 @@
       "@stores/*": ["src/stores/*"],
       "@command/*": ["src/command/*"],
       "@lib/*": ["src/lib/*"],
-      "@scripts/*": ["src/scripts/*"]
+      "@scripts/*": ["src/scripts/*"],
+      "@api/*": ["src/api/*"]
     }
   },
   "include": [".astro/types.d.ts", "**/*.ts", "**/*.d.ts", "**/*.astro"],
