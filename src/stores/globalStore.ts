@@ -8,6 +8,7 @@ interface ScrollStoreType {
   scrollPercentage: number;
   isScrollLocked: boolean;
   isSceneChangeEnabled: boolean;
+  isOpeningTransitionComplete: boolean;
 }
 
 interface F1DataStoreType {
@@ -28,7 +29,8 @@ export const scrollStore = proxy<Store>({
       scrollAmount: 0,
       scrollPercentage: 0,
       isScrollLocked: true,
-      isSceneChangeEnabled: false
+      isSceneChangeEnabled: false,
+      isOpeningTransitionComplete: false
     } as ScrollStoreType,
     f1DataStore: {
       locationData: null,
@@ -54,6 +56,9 @@ export const scrollStore = proxy<Store>({
     },
     setSceneChangeEnabled(isEnabled: boolean) {
       scrollStore.states.scrollStore.isSceneChangeEnabled = isEnabled;
+    },
+    setOpeningTransitionComplete(isComplete: boolean) {
+      scrollStore.states.scrollStore.isOpeningTransitionComplete = isComplete;
     },
     // F1データ関連のアクション
     setLocationData(data: LocationData[]) {
@@ -88,6 +93,7 @@ scrollStore.subscribe = (
     scrollPercentage: number;
     isScrollLocked: boolean;
     isSceneChangeEnabled: boolean;
+    isOpeningTransitionComplete: boolean;
   }) => void
 ) => {
   return subscribe(scrollStore.states.scrollStore, () => {
@@ -95,7 +101,9 @@ scrollStore.subscribe = (
       scrollAmount: scrollStore.states.scrollStore.scrollAmount,
       scrollPercentage: scrollStore.states.scrollStore.scrollPercentage,
       isScrollLocked: scrollStore.states.scrollStore.isScrollLocked,
-      isSceneChangeEnabled: scrollStore.states.scrollStore.isSceneChangeEnabled
+      isSceneChangeEnabled: scrollStore.states.scrollStore.isSceneChangeEnabled,
+      isOpeningTransitionComplete:
+        scrollStore.states.scrollStore.isOpeningTransitionComplete
     });
   });
 };

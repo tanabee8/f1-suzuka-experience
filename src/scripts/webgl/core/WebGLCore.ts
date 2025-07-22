@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { SceneManager } from './SceneManager';
 import { ScrollObserver } from './ScrollObserver';
+import { scrollStore } from '../../../stores/globalStore';
 
 /**
  * WebGLの中核となるクラス
@@ -165,6 +166,9 @@ export function destroyWebGL(): void {
 export function startOpeningSequence(): void {
   const instance = getWebGLInstance();
   if (instance) {
+    // オープニングトランジション完了フラグをリセット
+    scrollStore.actions.setOpeningTransitionComplete(false);
+
     instance.startOpening();
   }
 }

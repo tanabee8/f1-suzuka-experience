@@ -17,21 +17,25 @@
 
   if (startButton && openingScreen) {
     startButton.addEventListener('click', () => {
+      // カスタムイベントをディスパッチしてOpeningSceneの終了アニメーションをトリガー
+      const openingEndEvent = new CustomEvent('opening-end-animation');
+      document.dispatchEvent(openingEndEvent);
+
       // スクロールロックを解除
       scrollStore.actions.setScrollLocked(false);
-
-      // シーン切り替えを有効にする
-      scrollStore.actions.setSceneChangeEnabled(true);
 
       // アニメーションクラスを追加
       openingScreen.classList.add('fade-out');
 
-      // アニメーション終了後に非表示
+      // アニメーション終了後に非表示とシーン切り替えを有効化
       setTimeout(() => {
         if (openingScreen) {
           openingScreen.style.display = 'none';
+          // シーン切り替えとOpeningトランジション完了を設定
+          scrollStore.actions.setOpeningTransitionComplete(true);
+          scrollStore.actions.setSceneChangeEnabled(true);
         }
-      }, 800); // フェードアウトにかかる時間
+      }, 2500); // アニメーションの完了時間（WebGLアニメーションと同期）
     });
   }
 </script>

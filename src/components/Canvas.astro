@@ -90,6 +90,15 @@
           return;
         }
 
+        // Openingトランジションが完了しているか確認
+        const isOpeningTransitionComplete =
+          scrollStore.states.scrollStore.isOpeningTransitionComplete;
+
+        // Openingトランジションが完了していない場合は何もしない
+        if (!isOpeningTransitionComplete) {
+          return;
+        }
+
         // 表示されているコンポーネントを優先度順にソート
         const visibleComponents = targetComponents
           .filter((comp) => comp.isVisible)

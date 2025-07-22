@@ -1,15 +1,25 @@
 import * as THREE from 'three';
 import { BaseScene } from './BaseScene';
 import { gsap } from 'gsap';
+import { scrollStore } from '../../../stores/globalStore';
 
 /**
  * オープニング演出を担当するシーン
  */
 export class OpeningScene extends BaseScene {
   private cube: THREE.Mesh | null = null;
+  private isExiting: boolean = false;
+  private exitAnimationComplete: boolean = false;
+  private onExitComplete: (() => void) | null = null;
 
   constructor(camera: THREE.PerspectiveCamera) {
     super(camera);
+
+    // オープニング終了イベントのリスナー登録
+    document.addEventListener(
+      'opening-end-animation',
+      this.startExitAnimation.bind(this)
+    );
   }
 
   /**
@@ -57,11 +67,70 @@ export class OpeningScene extends BaseScene {
   }
 
   /**
+   * オープニング終了アニメーションを開始
+   */
+  private startExitAnimation(): void {
+    if (this.isExiting) return; // すでに終了中なら何もしない
+
+    this.isExiting = true;
+    console.log('オープニングシーン終了アニメーション開始');
+
+    // カメラを遠ざけるアニメーション
+    gsap.to(this.camera.position, {
+      z: 20,
+      duration: 2,
+      ease: 'power2.inOut',
+      onComplete: () => {
+        this.exitAnimationComplete = true;
+        console.log('オープニングシーン終了アニメーション完了');
+
+        // シーン変更を有効にする
+        scrollStore.actions.setOpeningTransitionComplete(true);
+
+        // コールバックがあれば実行
+        if (this.onExitComplete) {
+          this.onExitComplete();
+        }
+      }
+    });
+
+    // キューブを回転させながら小さくするアニメーション
+    if (this.cube) {
+      gsap.to(this.cube.rotation, {
+        x: Math.PI * 4,
+        y: Math.PI * 4,
+        duration: 2,
+        ease: 'power2.inOut'
+      });
+
+      gsap.to(this.cube.scale, {
+        x: 0.1,
+        y: 0.1,
+        z: 0.1,
+        duration: 2,
+        ease: 'power2.inOut'
+      });
+    }
+  }
+
+  /**
+   * 終了アニメーション完了後のコールバックを設定
+   * @param callback 実行するコールバック関数
+   */
+  public setOnExitComplete(callback: () => void): void {
+    this.onExitComplete = callback;
+    // すでにアニメーションが完了している場合は即時実行
+    if (this.exitAnimationComplete) {
+      callback();
+    }
+  }
+
+  /**
    * フレーム更新処理
    * @param deltaTime 前フレームからの経過時間
    */
   public update(deltaTime: number): void {
-    if (this.cube) {
+    if (this.cube && !this.isExiting) {
       this.cube.rotation.x += deltaTime * 0.5;
       this.cube.rotation.y += deltaTime * 0.2;
     }
