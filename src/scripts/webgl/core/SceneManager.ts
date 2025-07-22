@@ -47,6 +47,7 @@ export class SceneManager {
    * @param sceneName アクティブ化するシーン名
    */
   public activateScene(sceneName: string): void {
+    console.log(`Activating scene: ${sceneName}`);
     if (!this.scenes.has(sceneName)) {
       console.warn(
         `Scene "${sceneName}" does not exist. Available scenes: ${Array.from(this.scenes.keys()).join(', ')}`

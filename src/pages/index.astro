@@ -47,13 +47,50 @@ import RaceMap from '@/components/RaceMap.astro';
 
 <script>
   import { scrollStore } from '@stores/globalStore';
+  import { subscribe } from 'valtio/vanilla';
   import Lenis from 'lenis';
 
+  // Lenisインスタンスを作成
   const lenis = new Lenis({
-    autoRaf: true
+    autoRaf: true,
+    lerp: 0.1, // スムーススクロール値
+    wheelMultiplier: 0.8, // ホイールの速度調整
+    smoothWheel: true, // スムーススクロールの有効化
+    orientation: 'vertical' // スクロール方向
   });
+
+  // スクロールイベントの処理
   lenis.on('scroll', (e) => {
-    scrollStore.actions.setScrollAmount(e.progress);
-    scrollStore.actions.setScrollPercentage(e.scroll);
+    // スクロールロックが解除されている場合のみスクロール値を更新
+    if (!scrollStore.states.scrollStore.isScrollLocked) {
+      scrollStore.actions.setScrollAmount(e.progress);
+      scrollStore.actions.setScrollPercentage(e.scroll);
+    }
   });
+
+  // 初期状態ではスクロールを無効化
+  if (scrollStore.states.scrollStore.isScrollLocked) {
+    lenis.stop();
+  }
+
+  // スクロールロック状態の変化を監視
+  subscribe(scrollStore.states.scrollStore, () => {
+    if (scrollStore.states.scrollStore.isScrollLocked) {
+      // スクロールをロック
+      lenis.stop();
+      // ページトップへスクロール
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    } else {
+      // スクロールを有効化
+      lenis.start();
+    }
+  });
+
+  // スクロールの実行
+  function raf(time: number) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+
+  requestAnimationFrame(raf);
 </script>

@@ -16,7 +16,6 @@ export class ModelLoader {
   private static initDracoLoader(): void {
     if (!this.dracoLoader) {
       this.dracoLoader = new DRACOLoader();
-      // Three.jsに含まれるDRACOデコーダーのパスを設定
       this.dracoLoader.setDecoderPath(
         'https://www.gstatic.com/draco/versioned/decoders/1.5.6/'
       );
@@ -62,13 +61,11 @@ export class ModelLoader {
             }
           });
 
-          // グローバルストアに保存
           scrollStore.actions.setF1Model(model);
 
           resolve(model);
         },
         (progress) => {
-          // 進捗状況の処理（必要に応じて）
           const percentComplete = (progress.loaded / progress.total) * 100;
           console.log(`モデルロード進捗: ${percentComplete.toFixed(1)}%`);
         },

@@ -2,9 +2,39 @@
 
 ---
 
-<div class="opening">
-  <button>START</button>
+<div class="opening" id="opening-screen">
+  <div class="opening-content">
+    <h1 class="title">F1 SUZUKA EXPERIENCE</h1>
+    <button id="start-button" class="start-button">START</button>
+  </div>
 </div>
+
+<script>
+  import { scrollStore } from '@stores/globalStore';
+
+  const startButton = document.getElementById('start-button');
+  const openingScreen = document.getElementById('opening-screen');
+
+  if (startButton && openingScreen) {
+    startButton.addEventListener('click', () => {
+      // スクロールロックを解除
+      scrollStore.actions.setScrollLocked(false);
+
+      // シーン切り替えを有効にする
+      scrollStore.actions.setSceneChangeEnabled(true);
+
+      // アニメーションクラスを追加
+      openingScreen.classList.add('fade-out');
+
+      // アニメーション終了後に非表示
+      setTimeout(() => {
+        if (openingScreen) {
+          openingScreen.style.display = 'none';
+        }
+      }, 800); // フェードアウトにかかる時間
+    });
+  }
+</script>
 
 <style lang="scss">
   .opening {
@@ -15,6 +45,39 @@
     height: 100vh;
     height: 100dvh;
     z-index: var(--z-index-opening);
-    background-color: rgba(blue, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease;
+  }
+
+  .opening-content {
+    text-align: center;
+  }
+
+  .title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 2rem;
+  }
+
+  .start-button {
+    background-color: #ff1801;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .fade-out {
+    opacity: 0;
+    pointer-events: none;
   }
 </style>

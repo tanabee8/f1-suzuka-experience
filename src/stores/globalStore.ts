@@ -6,6 +6,8 @@ import * as THREE from 'three';
 interface ScrollStoreType {
   scrollAmount: number;
   scrollPercentage: number;
+  isScrollLocked: boolean;
+  isSceneChangeEnabled: boolean;
 }
 
 interface F1DataStoreType {
@@ -24,7 +26,9 @@ export const scrollStore = proxy<Store>({
   states: {
     scrollStore: {
       scrollAmount: 0,
-      scrollPercentage: 0
+      scrollPercentage: 0,
+      isScrollLocked: true,
+      isSceneChangeEnabled: false
     } as ScrollStoreType,
     f1DataStore: {
       locationData: null,
@@ -44,6 +48,12 @@ export const scrollStore = proxy<Store>({
     },
     setScrollPercentage(percentage: number) {
       scrollStore.states.scrollStore.scrollPercentage = percentage;
+    },
+    setScrollLocked(isLocked: boolean) {
+      scrollStore.states.scrollStore.isScrollLocked = isLocked;
+    },
+    setSceneChangeEnabled(isEnabled: boolean) {
+      scrollStore.states.scrollStore.isSceneChangeEnabled = isEnabled;
     },
     // F1データ関連のアクション
     setLocationData(data: LocationData[]) {
@@ -73,12 +83,19 @@ export const scrollStore = proxy<Store>({
 
 // 購読用のヘルパー関数を追加
 scrollStore.subscribe = (
-  callback: (state: { scrollAmount: number; scrollPercentage: number }) => void
+  callback: (state: {
+    scrollAmount: number;
+    scrollPercentage: number;
+    isScrollLocked: boolean;
+    isSceneChangeEnabled: boolean;
+  }) => void
 ) => {
   return subscribe(scrollStore.states.scrollStore, () => {
     callback({
       scrollAmount: scrollStore.states.scrollStore.scrollAmount,
-      scrollPercentage: scrollStore.states.scrollStore.scrollPercentage
+      scrollPercentage: scrollStore.states.scrollStore.scrollPercentage,
+      isScrollLocked: scrollStore.states.scrollStore.isScrollLocked,
+      isSceneChangeEnabled: scrollStore.states.scrollStore.isSceneChangeEnabled
     });
   });
 };

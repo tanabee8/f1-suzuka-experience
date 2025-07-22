@@ -25,6 +25,7 @@
 
 <script>
   import { scrollStore } from '@stores/globalStore';
+  import { subscribe } from 'valtio/vanilla';
   import {
     initWebGL,
     getWebGLInstance,
@@ -68,8 +69,27 @@
       // 現在表示中のコンポーネント
       let currentActiveComponent = '';
 
+      // シーン切り替えの状態を管理
+      let isSceneChangeEnabled = false;
+
+      // スクロールストアのシーン切り替え状態を購読
+      subscribe(scrollStore.states.scrollStore, () => {
+        isSceneChangeEnabled =
+          scrollStore.states.scrollStore.isSceneChangeEnabled;
+
+        // シーン切り替えが有効になった最初のタイミングで、現在の表示状態に基づいてシーンを更新
+        if (isSceneChangeEnabled) {
+          updateActiveScene();
+        }
+      });
+
       // 表示状態の更新とアクティブシーンの決定
       const updateActiveScene = () => {
+        // シーン切り替えが無効な場合は何もしない（opening状態を維持）
+        if (!isSceneChangeEnabled) {
+          return;
+        }
+
         // 表示されているコンポーネントを優先度順にソート
         const visibleComponents = targetComponents
           .filter((comp) => comp.isVisible)
